@@ -69,12 +69,26 @@ class SessionViewModel: ObservableObject {
     }
     
     func endSession() {
-        pauseSession()
-        currentPhase = .finished
-        timeRemaining = 0
-        scale = 1.0
-        // Here we will eventually trigger the persistence service to save a SessionRecord
-    }
+            pauseSession()
+            currentPhase = .finished
+            
+            // Calculate how much time they actually completed
+            let durationCompleted = totalDuration - timeRemaining
+            
+            // Only save if they actually breathed for at least a few seconds
+            if durationCompleted > 5 {
+                let record = SessionRecord(
+                    sessionName: "Breathing Session",
+                    type: .breathing,
+                    durationCompleted: durationCompleted,
+                    completionDate: Date()
+                )
+                PersistenceService.shared.saveSession(record)
+            }
+            
+            timeRemaining = 0
+            scale = 1.0
+        }
     
     // MARK: - Breathing Cycle Logic
     

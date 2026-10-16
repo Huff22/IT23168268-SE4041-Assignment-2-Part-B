@@ -34,9 +34,22 @@ struct ContentView: View {
                     }
                     .buttonStyle(.card)
                     
+                    
                     // Add this below the MoodSelectionView NavigationLink in ContentView.swift
                         NavigationLink(destination: AmbientEscapeView()) {
                             Text("Ambient Escape")
+                                .font(.title2)
+                                .padding(.horizontal, 40)
+                                .padding(.vertical, 20)
+                        }
+                        .buttonStyle(.plain)
+                        .background(Color.white.opacity(0.1))
+                        .cornerRadius(12)
+                        .foregroundColor(.white)
+                    
+                    // Add this right below the Ambient Escape NavigationLink
+                        NavigationLink(destination: JourneyView()) {
+                            Text("My Journey")
                                 .font(.title2)
                                 .padding(.horizontal, 40)
                                 .padding(.vertical, 20)
