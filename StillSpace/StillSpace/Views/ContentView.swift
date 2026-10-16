@@ -9,6 +9,40 @@ import SwiftUI
 
 struct ContentView: View {
     var body: some View {
-        BreathingStudioView()
+        NavigationStack {
+            ZStack {
+                Color(red: 0.05, green: 0.08, blue: 0.12).edgesIgnoringSafeArea(.all)
+                
+                VStack(spacing: 40) {
+                    Spacer()
+                    
+                    Text("StillSpace")
+                        .font(.system(size: 140, weight: .ultraLight, design: .rounded))
+                        .foregroundColor(.white)
+                    
+                    Text("A quieter moment, on the biggest screen in your home.")
+                        .font(.system(size: 40, weight: .regular))
+                        .foregroundColor(.gray)
+                    
+                    Spacer()
+                    
+                    NavigationLink(destination: MoodSelectionView()) {
+                        Text("Begin a quiet moment")
+                            .font(.title)
+                            .padding(.horizontal, 60)
+                            .padding(.vertical, 30)
+                    }
+                    .buttonStyle(.card)
+                    
+                    Spacer()
+                    
+                    // A subtle summary of recent practice (Static for now, will connect to persistence later)
+                    Text("Last session: 3 mins · Today")
+                        .font(.headline)
+                        .foregroundColor(.white.opacity(0.5))
+                        .padding(.bottom, 50)
+                }
+            }
+        }
     }
 }
