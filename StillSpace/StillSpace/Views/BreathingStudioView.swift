@@ -9,8 +9,8 @@ struct BreathingStudioView: View {
     @StateObject private var viewModel: SessionViewModel
     
     // Allow injecting a custom duration from the mood selection screen
-    init(duration: TimeInterval = 180) {
-        _viewModel = StateObject(wrappedValue: SessionViewModel(duration: duration))
+    init(duration: TimeInterval = 180, inhale: TimeInterval = 4.0, hold: TimeInterval = 2.0, exhale: TimeInterval = 6.0) {
+        _viewModel = StateObject(wrappedValue: SessionViewModel(duration: duration, inhale: inhale, hold: hold, exhale: exhale))
     }
     
     var body: some View {

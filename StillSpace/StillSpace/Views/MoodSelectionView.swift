@@ -64,8 +64,14 @@ struct MoodSelectionView: View {
                 }
                 
                 // Navigation to Breathing Studio
-                NavigationLink(destination: BreathingStudioView(duration: TimeInterval(selectedDuration * 60))) {
-                    Text("Start Breathing Session")
+                var pattern = getBreathingPattern()
+                    NavigationLink(destination: BreathingStudioView(
+                        duration: TimeInterval(selectedDuration * 60),
+                        inhale: pattern.inhale,
+                        hold: pattern.hold,
+                        exhale: pattern.exhale
+                    )) {
+                        Text("Start Breathing Session")
                         .font(.title)
                         .fontWeight(.medium)
                         .padding(.horizontal, 60)
@@ -79,4 +85,16 @@ struct MoodSelectionView: View {
             }
         }
     }
+    private func getBreathingPattern() -> (inhale: TimeInterval, hold: TimeInterval, exhale: TimeInterval) {
+            switch selectedMood {
+            case "Overwhelmed", "Restless":
+                return (4.0, 2.0, 6.0) // Calming
+            case "Focused":
+                return (4.0, 4.0, 4.0) // Box/Balanced
+            case "Tired":
+                return (6.0, 0.0, 2.0) // Energizing
+            default:
+                return (4.0, 2.0, 6.0)
+            }
+        }
 }

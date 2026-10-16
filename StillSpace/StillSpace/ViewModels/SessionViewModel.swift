@@ -25,13 +25,16 @@ class SessionViewModel: ObservableObject {
     private var phaseTimer: Timer?
     
     // 4-2-6 Breathing Pattern
-    private let inhaleDuration: TimeInterval = 4.0
-    private let holdDuration: TimeInterval = 2.0
-    private let exhaleDuration: TimeInterval = 6.0
+    private let inhaleDuration: TimeInterval
+    private let holdDuration: TimeInterval
+    private let exhaleDuration: TimeInterval
     
-    init(duration: TimeInterval = 180) { // Default to 3 minutes
-        self.totalDuration = duration
-        self.timeRemaining = duration
+    init(duration: TimeInterval = 180, inhale: TimeInterval = 4.0, hold: TimeInterval = 2.0, exhale: TimeInterval = 6.0) {
+            self.totalDuration = duration
+            self.timeRemaining = duration
+            self.inhaleDuration = inhale
+            self.holdDuration = hold
+            self.exhaleDuration = exhale
     }
     
     func toggleSession() {
