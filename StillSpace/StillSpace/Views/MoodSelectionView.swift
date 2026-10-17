@@ -93,14 +93,14 @@ struct MoodSelectionView: View {
                 // Duration Section
                 VStack(spacing: 24) {
                     Text("How much time do you have?")
-                        .font(.title2) // Scaled down
+                        .font(.headline) // Scaled down
                         .foregroundStyle(Theme.textSecondary)
 
                     HStack(spacing: 32) {
                         ForEach(durations, id: \.self) { d in
                             Button { selectedDuration = d } label: {
                                 Text("\(d) min")
-                                    .font(.title3.weight(.medium))
+                                    .font(.body.weight(.medium))
                                     .frame(width: 240, height: 76) // Tighter vertical padding
                             }
                             .buttonStyle(StillButtonStyle(selected: selectedDuration == d, cornerRadius: 18))
@@ -120,7 +120,7 @@ struct MoodSelectionView: View {
                             Image(systemName: "play.fill")
                                 .font(.body)
                             Text("Start Breathing Session")
-                                .font(.title3.weight(.semibold)) // Scaled down font
+                                .font(.headline.weight(.semibold)) // Scaled down font
                         }
                         // Much tighter padding to reduce the button's bulk
                         .padding(.horizontal, 40)

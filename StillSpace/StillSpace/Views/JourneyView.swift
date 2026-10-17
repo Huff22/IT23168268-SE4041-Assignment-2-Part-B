@@ -27,6 +27,8 @@ struct JourneyView: View {
                 Text("My Journey")
                     .font(.system(size: 56, weight: .semibold, design: .serif))
                     .foregroundStyle(Theme.textPrimary)
+                    // This padding pushes the Stats and Recent Sessions (the red box) further down
+                    .padding(.bottom, 40)
 
                 // Stats Row
                 HStack(spacing: 32) {
@@ -37,7 +39,7 @@ struct JourneyView: View {
                 .padding(.bottom, 10)
 
                 Text("Recent Sessions")
-                    .font(.title3.weight(.semibold))
+                    .font(.headline.weight(.semibold))
                     .foregroundStyle(Theme.textSecondary)
 
                 if history.isEmpty {
@@ -91,28 +93,28 @@ private struct SessionRow: View {
     var body: some View {
         HStack(spacing: 24) {
             Image(systemName: "figure.mind.and.body")
-                .font(.system(size: 24))
+                .font(.system(size: 20)) // Scaled down icon to match smaller text
                 .foregroundStyle(isFocused ? .black : Theme.accent)
-                .frame(width: 50, height: 50)
+                .frame(width: 44, height: 44) // Scaled down frame
                 .background(Circle().fill(isFocused ? Color.black.opacity(0.1) : Theme.accent.opacity(0.12)))
 
-            VStack(alignment: .leading, spacing: 6) {
+            VStack(alignment: .leading, spacing: 4) {
                 Text(record.sessionName)
-                    .font(.headline)
+                    .font(.body.weight(.medium)) // Smaller font (.body instead of .headline)
                     .foregroundStyle(isFocused ? .black : Theme.textPrimary)
                 Text(record.completionDate.formatted(date: .abbreviated, time: .shortened))
-                    .font(.subheadline)
+                    .font(.caption) // Smaller font (.caption instead of .subheadline)
                     .foregroundStyle(isFocused ? .black.opacity(0.7) : Theme.textSecondary)
             }
 
             Spacer()
 
             Text("\(max(1, Int(record.durationCompleted) / 60)) min")
-                .font(.headline.weight(.bold))
+                .font(.body.weight(.bold)) // Smaller font (.body instead of .headline)
                 .foregroundStyle(isFocused ? .black : Theme.textPrimary)
         }
         .padding(.horizontal, 30)
-        .padding(.vertical, 18)
+        .padding(.vertical, 14) // Slightly tighter vertical padding
         .frame(maxWidth: .infinity)
         // Flat background color change instead of 3D hover pop
         .background(isFocused ? Theme.accentLight : Color.clear)
