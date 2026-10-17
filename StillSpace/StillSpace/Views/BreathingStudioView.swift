@@ -48,64 +48,78 @@ struct BreathingStudioView: View {
     var body: some View {
         ZStack {
             StillBackground()
+            
+            // Extra subtle ambient ripple effect in the background
+            Circle()
+                .stroke(Theme.blush.opacity(0.15), lineWidth: 2)
+                .frame(width: 750, height: 750)
+                .scaleEffect(viewModel.scale * 1.1)
+                .opacity(viewModel.isActive ? 1 : 0.3)
+                .animation(phaseAnimation, value: viewModel.scale)
 
             VStack(spacing: 0) {
                 Spacer()
 
                 // Phase instruction
-                VStack(spacing: 16) {
+                VStack(spacing: 20) {
                     Text(isFinished ? "Complete" : viewModel.currentPhase.rawValue)
-                        .font(.system(size: 76, weight: .light, design: .rounded))
-                        .foregroundStyle(Theme.textPrimary)
+                        .font(.system(size: 86, weight: .light, design: .serif)) // Serif matches the new cinematic aesthetic
+                        .foregroundStyle(Theme.sand)
                         .id(viewModel.currentPhase)
                         .transition(.opacity)
 
                     Text(hint)
-                        .font(.title3)
-                        .foregroundStyle(Theme.textSecondary)
+                        .font(.title2)
+                        .foregroundStyle(Theme.accentLight) // Soft blue for the hint
                 }
                 .animation(.easeInOut(duration: 0.6), value: viewModel.currentPhase)
 
                 Spacer(minLength: 20)
 
-                // Breathing orb
+                // Breathing orb (Redesigned with organic Sage/Sky/Blush palette)
                 ZStack {
-                    // Session progress ring
+                    // Background track for progress
                     Circle()
-                        .stroke(Color.white.opacity(0.08), lineWidth: 6)
+                        .stroke(Color.white.opacity(0.06), lineWidth: 6)
                         .frame(width: 520, height: 520)
+                    
+                    // Session progress ring (Using the warm blush tone for contrast)
                     Circle()
                         .trim(from: 0, to: progress)
-                        .stroke(Theme.accent.opacity(0.8),
+                        .stroke(Theme.blush.opacity(0.9),
                                 style: StrokeStyle(lineWidth: 6, lineCap: .round))
                         .frame(width: 520, height: 520)
                         .rotationEffect(.degrees(-90))
                         .animation(.linear(duration: 1), value: progress)
 
-                    // Breathing layers (each scales a little differently for depth)
+                    // Breathing layers (Organic glass effect)
                     Group {
+                        // Outer soft glow
                         Circle()
-                            .fill(Theme.accent.opacity(0.25))
+                            .fill(Theme.accentLight.opacity(0.25))
                             .frame(width: 420, height: 420)
                             .scaleEffect(viewModel.scale * 1.15)
-                            .blur(radius: 55)
+                            .blur(radius: 60)
 
+                        // Middle layer
                         Circle()
-                            .fill(Theme.accentDeep.opacity(0.35))
+                            .fill(Theme.accent.opacity(0.4))
                             .frame(width: 380, height: 380)
                             .scaleEffect(viewModel.scale * 1.05)
+                            .blur(radius: 10)
 
+                        // Inner core (Radial gradient of Sage to Sky Blue)
                         Circle()
                             .fill(
-                                RadialGradient(colors: [Theme.accent, Theme.accentDeep],
+                                RadialGradient(colors: [Theme.accentLight, Theme.accent],
                                                center: .topLeading, startRadius: 20, endRadius: 360)
                             )
                             .frame(width: 340, height: 340)
                             .scaleEffect(viewModel.scale)
-                            .shadow(color: Theme.accent.opacity(0.5), radius: 40)
+                            .shadow(color: Theme.accent.opacity(0.6), radius: 40)
                             .overlay(
                                 Circle()
-                                    .strokeBorder(Color.white.opacity(0.35), lineWidth: 2)
+                                    .strokeBorder(Color.white.opacity(0.4), lineWidth: 1.5)
                                     .frame(width: 340, height: 340)
                                     .scaleEffect(viewModel.scale)
                             )
@@ -117,7 +131,7 @@ struct BreathingStudioView: View {
                 Spacer(minLength: 20)
 
                 // Timer + controls
-                VStack(spacing: 32) {
+                VStack(spacing: 36) {
                     Text(timeString(from: viewModel.timeRemaining))
                         .font(.system(size: 44, weight: .light, design: .monospaced))
                         .foregroundStyle(Theme.textSecondary)
@@ -129,7 +143,7 @@ struct BreathingStudioView: View {
                                 .padding(.horizontal, 80)
                                 .padding(.vertical, 24)
                         }
-                        .buttonStyle(StillButtonStyle(prominent: true))
+                        .buttonStyle(StillButtonStyle(prominent: true)) // Uses the new prominent Blush CTA style
                     } else {
                         HStack(spacing: 40) {
                             Button { viewModel.toggleSession() } label: {
@@ -145,14 +159,14 @@ struct BreathingStudioView: View {
                             } label: {
                                 Image(systemName: "xmark")
                                     .font(.system(size: 36))
-                                    .foregroundStyle(Color(red: 1, green: 0.45, blue: 0.45))
+                                    .foregroundStyle(Theme.blush) // Use blush instead of pure red for a softer look
                                     .frame(width: 100, height: 100)
                             }
                             .buttonStyle(StillButtonStyle(cornerRadius: 50))
                         }
                     }
                 }
-                .padding(.bottom, 50)
+                .padding(.bottom, 60)
             }
         }
         .onAppear {

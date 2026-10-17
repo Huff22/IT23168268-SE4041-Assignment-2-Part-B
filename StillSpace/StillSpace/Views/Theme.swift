@@ -1,55 +1,52 @@
-//
-//  Theme.swift
-//  StillSpace
-//
-//  Shared design system: colours, animated background, button style, glass cards.
-//
 import SwiftUI
 
 enum Theme {
-    static let bgTop = Color(red: 0.04, green: 0.07, blue: 0.14)
-    static let bgBottom = Color(red: 0.02, green: 0.03, blue: 0.07)
-    static let accent = Color(red: 0.45, green: 0.85, blue: 0.95)
-    static let accentDeep = Color(red: 0.35, green: 0.50, blue: 0.95)
+    // Calming earthy palette from image_2.png
+    static let bgTop = Color(hex: "1F2D24")        // Dark forest/sage
+    static let bgBottom = Color(hex: "111B15")     // Deep shadow forest
+    static let accent = Color(hex: "5E8B7E")       // Sage Green
+    static let accentLight = Color(hex: "A7C7E7")  // Pastel Sky Blue
+    static let blush = Color(hex: "E8AEB7")        // Soft Dusty Rose (Prominent)
+    static let sand = Color(hex: "F1F5F4")         // Off-white/Sand for readable text
+    
     static let textPrimary = Color.white.opacity(0.95)
-    static let textSecondary = Color.white.opacity(0.6)
+    static let textSecondary = Color.white.opacity(0.65)
     static let textTertiary = Color.white.opacity(0.4)
 }
 
-// MARK: - Background
-
-/// Deep night gradient with two slowly drifting glows. Use as the base layer of every screen.
+// MARK: - Natural Animated Background
 struct StillBackground: View {
     @State private var drift = false
 
     var body: some View {
         ZStack {
+            // Warm-dark forest backdrop
             LinearGradient(colors: [Theme.bgTop, Theme.bgBottom], startPoint: .top, endPoint: .bottom)
 
+            // Slowly moving organic ambient glow (Sage/Teal)
             Circle()
-                .fill(Theme.accentDeep.opacity(0.22))
-                .frame(width: 900, height: 900)
-                .blur(radius: 160)
-                .offset(x: drift ? -420 : -560, y: drift ? -260 : -340)
+                .fill(Theme.accent.opacity(0.18))
+                .frame(width: 950, height: 950)
+                .blur(radius: 170)
+                .offset(x: drift ? -350 : -480, y: drift ? -220 : -300)
 
+            // Dynamic ambient highlight (Rose/Blush)
             Circle()
-                .fill(Theme.accent.opacity(0.14))
-                .frame(width: 700, height: 700)
-                .blur(radius: 140)
-                .offset(x: drift ? 640 : 520, y: drift ? 380 : 300)
+                .fill(Theme.blush.opacity(0.08))
+                .frame(width: 800, height: 800)
+                .blur(radius: 150)
+                .offset(x: drift ? 550 : 420, y: drift ? 300 : 250)
         }
         .ignoresSafeArea()
         .onAppear {
-            withAnimation(.easeInOut(duration: 14).repeatForever(autoreverses: true)) {
+            withAnimation(.easeInOut(duration: 16).repeatForever(autoreverses: true)) {
                 drift = true
             }
         }
     }
 }
 
-// MARK: - Button style
-
-/// One button style for the whole app: soft glass at rest, lifted + glowing when focused.
+// MARK: - Redesigned Button Styles
 struct StillButtonStyle: ButtonStyle {
     var prominent: Bool = false
     var selected: Bool = false
@@ -73,44 +70,72 @@ private struct StillButtonBody: View {
 
     private var fill: AnyShapeStyle {
         if prominent {
-            return AnyShapeStyle(LinearGradient(colors: [Theme.accent, Theme.accentDeep],
+            // Dusty rose/peach highlight for important CTA
+            return AnyShapeStyle(LinearGradient(colors: [Theme.blush, Theme.blush.opacity(0.85)],
                                                 startPoint: .topLeading, endPoint: .bottomTrailing))
         }
         if selected {
             return AnyShapeStyle(Theme.accent.opacity(isFocused ? 0.35 : 0.22))
         }
-        return AnyShapeStyle(Color.white.opacity(isFocused ? 0.20 : 0.07))
+        // Transparent glass state at rest
+        return AnyShapeStyle(Color.white.opacity(isFocused ? 0.18 : 0.05))
     }
 
     var body: some View {
         configuration.label
-            .foregroundStyle(prominent ? Color.black.opacity(0.85) : Theme.textPrimary)
+            .foregroundStyle(prominent ? Color(hex: "2D1419") : Theme.textPrimary) // Darker text for rose CTA
             .background(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous).fill(fill))
             .overlay(
                 RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .strokeBorder(selected ? Theme.accent : Color.white.opacity(isFocused ? 0.5 : 0.0),
-                                  lineWidth: selected ? 3 : 2)
+                    .strokeBorder(selected ? Theme.accentLight : Color.white.opacity(isFocused ? 0.45 : 0.0),
+                                  lineWidth: selected ? 3.5 : 1.5)
             )
-            .scaleEffect(isFocused ? 1.07 : (configuration.isPressed ? 0.97 : 1.0))
-            .shadow(color: (prominent ? Theme.accent : Color.black).opacity(isFocused ? 0.45 : 0),
-                    radius: 36, y: 18)
-            .animation(.spring(response: 0.35, dampingFraction: 0.75), value: isFocused)
+            .scaleEffect(isFocused ? 1.05 : (configuration.isPressed ? 0.97 : 1.0))
+            .shadow(color: (prominent ? Theme.blush : Color.black).opacity(isFocused ? 0.35 : 0),
+                    radius: 28, y: 12)
+            .animation(.spring(response: 0.3, dampingFraction: 0.8), value: isFocused)
     }
 }
 
-// MARK: - Glass card
-
+// MARK: - Glassmorphism Card Modifiers
 extension View {
-    /// Frosted card used for stats, list rows, etc.
     func glassCard(cornerRadius: CGFloat = 28) -> some View {
         self
             .background(
                 RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .fill(Color.white.opacity(0.06))
+                    .fill(Color.white.opacity(0.04))
+                    .shadow(color: Color.black.opacity(0.15), radius: 15, x: 0, y: 10)
             )
             .overlay(
                 RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .strokeBorder(Color.white.opacity(0.08), lineWidth: 1)
+                    .strokeBorder(Color.white.opacity(0.06), lineWidth: 1)
             )
+    }
+}
+
+// MARK: - Hex Color Helper
+extension Color {
+    init(hex: String) {
+        let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
+        var int: UInt64 = 0
+        Scanner(string: hex).scanHexInt64(&int)
+        let a, r, g, b: UInt64
+        switch hex.count {
+        case 3: // RGB (12-bit)
+            (a, r, g, b) = (255, (int >> 8) * 17, (int >> 4 & 0xF) * 17, (int & 0xF) * 17)
+        case 6: // RGB (24-bit)
+            (a, r, g, b) = (255, int >> 16, int >> 8 & 0xFF, int & 0xFF)
+        case 8: // ARGB (32-bit)
+            (a, r, g, b) = (int >> 24, int >> 16 & 0xFF, int >> 8 & 0xFF, int & 0xFF)
+        default:
+            (a, r, g, b) = (255, 0, 0, 0)
+        }
+        self.init(
+            .sRGB,
+            red: Double(r) / 255,
+            green: Double(g) / 255,
+            blue:  Double(b) / 255,
+            opacity: Double(a) / 255
+        )
     }
 }

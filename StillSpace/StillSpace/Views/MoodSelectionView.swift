@@ -57,73 +57,84 @@ struct MoodSelectionView: View {
 
     var body: some View {
         ZStack {
+            // Keeping the standard animated background, no image added as requested
             StillBackground()
 
-            VStack(spacing: 70) {
-                Text("How are you feeling?")
-                    .font(.system(size: 68, weight: .light, design: .rounded))
-                    .foregroundStyle(Theme.textPrimary)
+            VStack(spacing: 80) {
+                
+                // Mood Section
+                VStack(spacing: 36) {
+                    Text("How are you feeling?")
+                        .font(.system(size: 56, weight: .semibold, design: .serif)) // Smaller, using serif
+                        .foregroundStyle(Theme.textPrimary)
 
-                // Mood
-                HStack(spacing: 36) {
-                    ForEach(Mood.allCases) { mood in
-                        Button { selectedMood = mood } label: {
-                            VStack(spacing: 16) {
-                                Image(systemName: mood.icon)
-                                    .font(.system(size: 52))
-                                    .symbolRenderingMode(.hierarchical)
-                                Text(mood.rawValue)
-                                    .font(.title3.weight(.medium))
-                                Text(mood.blurb)
-                                    .font(.callout)
-                                    .foregroundStyle(Theme.textSecondary)
+                    HStack(spacing: 32) {
+                        ForEach(Mood.allCases) { mood in
+                            Button { selectedMood = mood } label: {
+                                VStack(spacing: 12) {
+                                    Image(systemName: mood.icon)
+                                        .font(.system(size: 40)) // Scaled down icon
+                                        .symbolRenderingMode(.hierarchical)
+                                    Text(mood.rawValue)
+                                        .font(.headline)
+                                        .lineLimit(1) // Prevents multi-line wrapping
+                                    Text(mood.blurb)
+                                        .font(.subheadline)
+                                        .foregroundStyle(Theme.textSecondary)
+                                }
+                                // Significantly wider frame (320) to fit "Overwhelmed"
+                                .frame(width: 320, height: 180)
                             }
-                            .frame(width: 270, height: 220)
+                            .buttonStyle(StillButtonStyle(selected: selectedMood == mood, cornerRadius: 20))
                         }
-                        .buttonStyle(StillButtonStyle(selected: selectedMood == mood))
                     }
                 }
 
-                // Duration
-                VStack(spacing: 28) {
+                // Duration Section
+                VStack(spacing: 24) {
                     Text("How much time do you have?")
-                        .font(.title3)
+                        .font(.title2) // Scaled down
                         .foregroundStyle(Theme.textSecondary)
 
-                    HStack(spacing: 36) {
+                    HStack(spacing: 32) {
                         ForEach(durations, id: \.self) { d in
                             Button { selectedDuration = d } label: {
                                 Text("\(d) min")
-                                    .font(.title2.weight(.medium))
-                                    .frame(width: 220, height: 80)
+                                    .font(.title3.weight(.medium))
+                                    .frame(width: 240, height: 76) // Tighter vertical padding
                             }
-                            .buttonStyle(StillButtonStyle(selected: selectedDuration == d, cornerRadius: 22))
+                            .buttonStyle(StillButtonStyle(selected: selectedDuration == d, cornerRadius: 18))
                         }
                     }
                 }
 
-                // Start
-                VStack(spacing: 24) {
+                // Start Section
+                VStack(spacing: 20) {
                     NavigationLink(destination: BreathingStudioView(
                         duration: TimeInterval(selectedDuration * 60),
                         inhale: pattern.inhale,
                         hold: pattern.hold,
                         exhale: pattern.exhale
                     )) {
-                        Text("Start Breathing Session")
-                            .font(.title2.weight(.semibold))
-                            .padding(.horizontal, 70)
-                            .padding(.vertical, 28)
+                        HStack(spacing: 12) {
+                            Image(systemName: "play.fill")
+                                .font(.body)
+                            Text("Start Breathing Session")
+                                .font(.title3.weight(.semibold)) // Scaled down font
+                        }
+                        // Much tighter padding to reduce the button's bulk
+                        .padding(.horizontal, 40)
+                        .padding(.vertical, 18)
                     }
-                    .buttonStyle(StillButtonStyle(prominent: true))
+                    .buttonStyle(StillButtonStyle(prominent: true, cornerRadius: 16))
 
                     Text(patternSummary)
-                        .font(.headline)
+                        .font(.subheadline)
                         .foregroundStyle(Theme.textTertiary)
                         .animation(.easeInOut, value: selectedMood)
                 }
             }
-            .padding(.horizontal, 80)
+            .padding(.horizontal, 60)
         }
     }
 }

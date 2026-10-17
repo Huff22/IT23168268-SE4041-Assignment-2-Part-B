@@ -11,5 +11,6 @@ struct AmbientEnvironment: Identifiable, Codable, Hashable {
     let name: String
     let imageName: String
     let audioName: String
-    let themeColorHex: String // Useful for UI theming
+    let videoName: String // New property
+    let themeColorHex: String
 }

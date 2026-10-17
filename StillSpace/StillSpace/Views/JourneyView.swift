@@ -23,53 +23,59 @@ struct JourneyView: View {
         ZStack {
             StillBackground()
 
-            VStack(alignment: .leading, spacing: 44) {
+            VStack(alignment: .leading, spacing: 36) {
                 Text("My Journey")
-                    .font(.system(size: 76, weight: .light, design: .rounded))
+                    .font(.system(size: 56, weight: .semibold, design: .serif))
                     .foregroundStyle(Theme.textPrimary)
 
-                HStack(spacing: 40) {
+                // Stats Row
+                HStack(spacing: 32) {
                     StatCard(title: "Total Sessions", value: "\(history.count)", icon: "leaf.fill")
                     StatCard(title: "Mindful Minutes", value: "\(totalMinutes)", icon: "clock.fill")
                     StatCard(title: "Longest Session", value: "\(longestMinutes) min", icon: "star.fill")
                 }
+                .padding(.bottom, 10)
 
                 Text("Recent Sessions")
-                    .font(.title2)
+                    .font(.title3.weight(.semibold))
                     .foregroundStyle(Theme.textSecondary)
 
                 if history.isEmpty {
-                    VStack(spacing: 20) {
+                    VStack(spacing: 16) {
                         Image(systemName: "wind")
-                            .font(.system(size: 64))
+                            .font(.system(size: 48))
                             .foregroundStyle(Theme.accent.opacity(0.7))
                         Text("Your journey begins with a single breath.")
-                            .font(.title3)
+                            .font(.headline)
                             .foregroundStyle(Theme.textPrimary)
                         Text("Complete a session and it will appear here.")
-                            .font(.headline)
+                            .font(.subheadline)
                             .foregroundStyle(Theme.textTertiary)
                     }
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, 60)
-                    .glassCard()
+                    .padding(.vertical, 50)
+                    .glassCard(cornerRadius: 16)
                 } else {
+                    // Unified History List
                     ScrollView(showsIndicators: false) {
-                        VStack(spacing: 18) {
+                        VStack(spacing: 0) {
                             ForEach(sortedHistory) { record in
-                                // Button purely so rows are focusable and the list scrolls with the remote
-                                Button(action: {}) {
-                                    SessionRow(record: record)
+                                SessionRow(record: record)
+                                
+                                // Add a subtle divider between rows (but not after the last one)
+                                if record.id != sortedHistory.last?.id {
+                                    Divider()
+                                        .background(Theme.textTertiary.opacity(0.3))
+                                        .padding(.leading, 90) // Aligns with the text, skipping the icon
                                 }
-                                .buttonStyle(StillButtonStyle(cornerRadius: 22))
                             }
                         }
-                        .padding(.vertical, 30)
-                        .padding(.horizontal, 20)
+                        .glassCard(cornerRadius: 16) // Wraps the entire list in one sleek container
+                        .padding(.bottom, 60)
                     }
                 }
             }
-            .padding(.horizontal, 90)
+            .padding(.horizontal, 100)
             .padding(.top, 60)
         }
         .onAppear {
@@ -80,32 +86,38 @@ struct JourneyView: View {
 
 private struct SessionRow: View {
     let record: SessionRecord
+    @Environment(\.isFocused) private var isFocused // Tracks remote focus for scrolling
 
     var body: some View {
-        HStack(spacing: 28) {
+        HStack(spacing: 24) {
             Image(systemName: "figure.mind.and.body")
-                .font(.system(size: 34))
-                .foregroundStyle(Theme.accent)
-                .frame(width: 70, height: 70)
-                .background(Circle().fill(Theme.accent.opacity(0.12)))
+                .font(.system(size: 24))
+                .foregroundStyle(isFocused ? .black : Theme.accent)
+                .frame(width: 50, height: 50)
+                .background(Circle().fill(isFocused ? Color.black.opacity(0.1) : Theme.accent.opacity(0.12)))
 
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: 6) {
                 Text(record.sessionName)
-                    .font(.title3.weight(.medium))
+                    .font(.headline)
+                    .foregroundStyle(isFocused ? .black : Theme.textPrimary)
                 Text(record.completionDate.formatted(date: .abbreviated, time: .shortened))
                     .font(.subheadline)
-                    .foregroundStyle(Theme.textSecondary)
+                    .foregroundStyle(isFocused ? .black.opacity(0.7) : Theme.textSecondary)
             }
 
             Spacer()
 
             Text("\(max(1, Int(record.durationCompleted) / 60)) min")
-                .font(.title3.weight(.bold))
-                .foregroundStyle(Theme.accent)
+                .font(.headline.weight(.bold))
+                .foregroundStyle(isFocused ? .black : Theme.textPrimary)
         }
-        .padding(.horizontal, 36)
-        .padding(.vertical, 24)
+        .padding(.horizontal, 30)
+        .padding(.vertical, 18)
         .frame(maxWidth: .infinity)
+        // Flat background color change instead of 3D hover pop
+        .background(isFocused ? Theme.accentLight : Color.clear)
+        .focusable(true) // Required to allow the tvOS remote to scroll the list
+        .animation(.easeInOut(duration: 0.2), value: isFocused)
     }
 }
 
@@ -115,21 +127,22 @@ struct StatCard: View {
     var icon: String = "circle.fill"
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            HStack(spacing: 12) {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 10) {
                 Image(systemName: icon)
-                    .foregroundStyle(Theme.accent.opacity(0.8))
+                    .font(.subheadline)
+                    .foregroundStyle(Theme.accentLight)
                 Text(title)
+                    .font(.subheadline)
                     .foregroundStyle(Theme.textSecondary)
             }
-            .font(.headline)
 
             Text(value)
-                .font(.system(size: 60, weight: .semibold, design: .rounded))
-                .foregroundStyle(Theme.accent)
+                .font(.system(size: 48, weight: .semibold, design: .rounded))
+                .foregroundStyle(Theme.textPrimary)
         }
-        .padding(36)
+        .padding(28)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .glassCard(cornerRadius: 24)
+        .glassCard(cornerRadius: 16)
     }
 }
