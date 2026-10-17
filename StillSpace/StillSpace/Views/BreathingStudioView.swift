@@ -2,94 +2,168 @@
 //  BreathingStudioView.swift
 //  StillSpace
 //
-//  Created by Hafsa Faleel on 2026-10-16.
 import SwiftUI
 
 struct BreathingStudioView: View {
     @StateObject private var viewModel: SessionViewModel
-    
-    // Allow injecting a custom duration from the mood selection screen
+    @Environment(\.dismiss) private var dismiss
+
+    private let totalDuration: TimeInterval
+    private let inhaleDuration: TimeInterval
+    private let exhaleDuration: TimeInterval
+    private let holdDuration: TimeInterval
+
     init(duration: TimeInterval = 180, inhale: TimeInterval = 4.0, hold: TimeInterval = 2.0, exhale: TimeInterval = 6.0) {
+        totalDuration = duration
+        inhaleDuration = inhale
+        holdDuration = hold
+        exhaleDuration = exhale
         _viewModel = StateObject(wrappedValue: SessionViewModel(duration: duration, inhale: inhale, hold: hold, exhale: exhale))
     }
-    
+
+    private var isFinished: Bool { viewModel.currentPhase == .finished }
+
+    private var progress: Double {
+        guard totalDuration > 0 else { return 0 }
+        return min(1, max(0, 1 - viewModel.timeRemaining / totalDuration))
+    }
+
+    private var phaseAnimation: Animation {
+        switch viewModel.currentPhase {
+        case .inhale: return .easeInOut(duration: inhaleDuration)
+        case .exhale: return .easeInOut(duration: exhaleDuration)
+        default:      return .easeInOut(duration: max(holdDuration, 1.0))
+        }
+    }
+
+    private var hint: String {
+        switch viewModel.currentPhase {
+        case .inhale:   return "Breathe in slowly through your nose"
+        case .exhale:   return "Let it all go"
+        case .finished: return "Well done. Carry this calm with you."
+        default:        return "Stay with the stillness"
+        }
+    }
+
     var body: some View {
         ZStack {
-            Color(red: 0.05, green: 0.08, blue: 0.12)
-                .edgesIgnoringSafeArea(.all)
-            
-            VStack {
+            StillBackground()
+
+            VStack(spacing: 0) {
                 Spacer()
-                
-                // Top: Phase Instruction
-                Text(viewModel.currentPhase.rawValue)
-                    .font(.system(size: 80, weight: .light, design: .rounded))
-                    .foregroundColor(.white.opacity(0.9))
-                    .animation(.easeInOut, value: viewModel.currentPhase)
-                    .padding(.bottom, 40)
-                
-                // Center: Animated Breathing Circle
+
+                // Phase instruction
+                VStack(spacing: 16) {
+                    Text(isFinished ? "Complete" : viewModel.currentPhase.rawValue)
+                        .font(.system(size: 76, weight: .light, design: .rounded))
+                        .foregroundStyle(Theme.textPrimary)
+                        .id(viewModel.currentPhase)
+                        .transition(.opacity)
+
+                    Text(hint)
+                        .font(.title3)
+                        .foregroundStyle(Theme.textSecondary)
+                }
+                .animation(.easeInOut(duration: 0.6), value: viewModel.currentPhase)
+
+                Spacer(minLength: 20)
+
+                // Breathing orb
                 ZStack {
-                    // Outer glow (reduced base size)
+                    // Session progress ring
                     Circle()
-                        .fill(Color.cyan.opacity(0.2))
-                        .frame(width: 400, height: 400)
-                        .scaleEffect(viewModel.scale * 1.1)
-                        .blur(radius: 50)
-                    
-                    // Main circle (reduced base size)
+                        .stroke(Color.white.opacity(0.08), lineWidth: 6)
+                        .frame(width: 520, height: 520)
                     Circle()
-                        .fill(LinearGradient(gradient: Gradient(colors: [.cyan, .blue]), startPoint: .top, endPoint: .bottom))
-                        .frame(width: 350, height: 350)
-                        .scaleEffect(viewModel.scale)
-                        .shadow(color: .cyan.opacity(0.5), radius: 30, x: 0, y: 0)
-                }
-                .animation(
-                    .easeInOut(duration: viewModel.currentPhase == .inhale ? 4.0 : (viewModel.currentPhase == .exhale ? 6.0 : 1.0)),
-                    value: viewModel.scale
-                )
-                
-                Spacer()
-                
-                // Bottom: Controls and Timer
-                VStack(spacing: 30) {
-                    Text(timeString(from: viewModel.timeRemaining))
-                        .font(.system(size: 48, weight: .medium, design: .monospaced))
-                        .foregroundColor(.white.opacity(0.6))
-                    
-                    HStack(spacing: 40) {
-                        Button(action: {
-                            viewModel.toggleSession()
-                        }) {
-                            Image(systemName: viewModel.isActive ? "pause.fill" : "play.fill")
-                                .font(.system(size: 40))
-                                .frame(width: 100, height: 100)
-                        }
-                        .buttonStyle(.card)
-                        
-                        Button(action: {
-                            viewModel.endSession()
-                        }) {
-                            Image(systemName: "xmark")
-                                .font(.system(size: 40))
-                                .frame(width: 100, height: 100)
-                                .foregroundColor(.red)
-                        }
-                        .buttonStyle(.card)
+                        .trim(from: 0, to: progress)
+                        .stroke(Theme.accent.opacity(0.8),
+                                style: StrokeStyle(lineWidth: 6, lineCap: .round))
+                        .frame(width: 520, height: 520)
+                        .rotationEffect(.degrees(-90))
+                        .animation(.linear(duration: 1), value: progress)
+
+                    // Breathing layers (each scales a little differently for depth)
+                    Group {
+                        Circle()
+                            .fill(Theme.accent.opacity(0.25))
+                            .frame(width: 420, height: 420)
+                            .scaleEffect(viewModel.scale * 1.15)
+                            .blur(radius: 55)
+
+                        Circle()
+                            .fill(Theme.accentDeep.opacity(0.35))
+                            .frame(width: 380, height: 380)
+                            .scaleEffect(viewModel.scale * 1.05)
+
+                        Circle()
+                            .fill(
+                                RadialGradient(colors: [Theme.accent, Theme.accentDeep],
+                                               center: .topLeading, startRadius: 20, endRadius: 360)
+                            )
+                            .frame(width: 340, height: 340)
+                            .scaleEffect(viewModel.scale)
+                            .shadow(color: Theme.accent.opacity(0.5), radius: 40)
+                            .overlay(
+                                Circle()
+                                    .strokeBorder(Color.white.opacity(0.35), lineWidth: 2)
+                                    .frame(width: 340, height: 340)
+                                    .scaleEffect(viewModel.scale)
+                            )
                     }
-                    .opacity(viewModel.currentPhase == .finished ? 0 : 1)
+                    .animation(phaseAnimation, value: viewModel.scale)
                 }
-                .padding(.bottom, 60)
+                .frame(height: 540)
+
+                Spacer(minLength: 20)
+
+                // Timer + controls
+                VStack(spacing: 32) {
+                    Text(timeString(from: viewModel.timeRemaining))
+                        .font(.system(size: 44, weight: .light, design: .monospaced))
+                        .foregroundStyle(Theme.textSecondary)
+
+                    if isFinished {
+                        Button { dismiss() } label: {
+                            Text("Done")
+                                .font(.title2.weight(.semibold))
+                                .padding(.horizontal, 80)
+                                .padding(.vertical, 24)
+                        }
+                        .buttonStyle(StillButtonStyle(prominent: true))
+                    } else {
+                        HStack(spacing: 40) {
+                            Button { viewModel.toggleSession() } label: {
+                                Image(systemName: viewModel.isActive ? "pause.fill" : "play.fill")
+                                    .font(.system(size: 36))
+                                    .frame(width: 100, height: 100)
+                            }
+                            .buttonStyle(StillButtonStyle(cornerRadius: 50))
+
+                            Button {
+                                viewModel.endSession()
+                                dismiss()
+                            } label: {
+                                Image(systemName: "xmark")
+                                    .font(.system(size: 36))
+                                    .foregroundStyle(Color(red: 1, green: 0.45, blue: 0.45))
+                                    .frame(width: 100, height: 100)
+                            }
+                            .buttonStyle(StillButtonStyle(cornerRadius: 50))
+                        }
+                    }
+                }
+                .padding(.bottom, 50)
             }
         }
         .onAppear {
-            viewModel.toggleSession()
+            if !viewModel.isActive && !isFinished {
+                viewModel.toggleSession()
+            }
         }
     }
-    
+
     private func timeString(from timeInterval: TimeInterval) -> String {
-        let minutes = Int(timeInterval) / 60
-        let seconds = Int(timeInterval) % 60
-        return String(format: "%02d:%02d", minutes, seconds)
+        let t = max(0, Int(timeInterval))
+        return String(format: "%02d:%02d", t / 60, t % 60)
     }
 }

@@ -2,69 +2,108 @@
 //  MoodSelectionView.swift
 //  StillSpace
 //
-//  Created by Hafsa Faleel on 2026-10-16.
-//
 import SwiftUI
 
+private enum Mood: String, CaseIterable, Identifiable {
+    case overwhelmed = "Overwhelmed"
+    case restless = "Restless"
+    case tired = "Tired"
+    case focused = "Focused"
+
+    var id: String { rawValue }
+
+    var icon: String {
+        switch self {
+        case .overwhelmed: return "cloud.fill"
+        case .restless:    return "wind"
+        case .tired:       return "moon.zzz.fill"
+        case .focused:     return "scope"
+        }
+    }
+
+    var blurb: String {
+        switch self {
+        case .overwhelmed, .restless: return "Slow, calming"
+        case .tired:                  return "Gentle energy"
+        case .focused:                return "Even, balanced"
+        }
+    }
+
+    var pattern: (inhale: TimeInterval, hold: TimeInterval, exhale: TimeInterval) {
+        switch self {
+        case .overwhelmed, .restless: return (4, 2, 6)
+        case .focused:                return (4, 4, 4)
+        case .tired:                  return (6, 0, 2)
+        }
+    }
+}
+
 struct MoodSelectionView: View {
-    let moods = ["Overwhelmed", "Restless", "Tired", "Focused"]
-    let durations = [3, 5, 10]
-    
-    @State private var selectedMood = "Restless"
+    private let durations = [3, 5, 10]
+
+    @State private var selectedMood: Mood = .restless
     @State private var selectedDuration = 3
-    
+
+    private var pattern: (inhale: TimeInterval, hold: TimeInterval, exhale: TimeInterval) {
+        selectedMood.pattern
+    }
+
+    private var patternSummary: String {
+        var parts = ["Inhale \(Int(pattern.inhale))s"]
+        if pattern.hold > 0 { parts.append("Hold \(Int(pattern.hold))s") }
+        parts.append("Exhale \(Int(pattern.exhale))s")
+        return parts.joined(separator: "  ·  ")
+    }
+
     var body: some View {
         ZStack {
-            Color(red: 0.05, green: 0.08, blue: 0.12).edgesIgnoringSafeArea(.all)
-            
-            VStack(spacing: 80) {
+            StillBackground()
+
+            VStack(spacing: 70) {
                 Text("How are you feeling?")
-                    .font(.system(size: 72, weight: .light))
-                    .foregroundColor(.white)
-                
-                // Mood Selection
-                HStack(spacing: 40) {
-                    ForEach(moods, id: \.self) { mood in
-                        Button(action: { selectedMood = mood }) {
-                            Text(mood)
-                                .font(.title)
-                                .padding(.horizontal, 40)
-                                .padding(.vertical, 20)
-                        }
-                        .buttonStyle(.card)
-                        // Simple visual indicator for selected state
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 12)
-                                .stroke(selectedMood == mood ? Color.cyan : Color.clear, lineWidth: 4)
-                        )
-                    }
-                }
-                
-                // Duration Selection
-                VStack(spacing: 30) {
-                    Text("How much time do you have?")
-                        .font(.title2)
-                        .foregroundColor(.gray)
-                    
-                    HStack(spacing: 40) {
-                        ForEach(durations, id: \.self) { duration in
-                            Button(action: { selectedDuration = duration }) {
-                                Text("\(duration) min")
-                                    .font(.title)
-                                    .frame(width: 200)
-                                    .padding(.vertical, 20)
+                    .font(.system(size: 68, weight: .light, design: .rounded))
+                    .foregroundStyle(Theme.textPrimary)
+
+                // Mood
+                HStack(spacing: 36) {
+                    ForEach(Mood.allCases) { mood in
+                        Button { selectedMood = mood } label: {
+                            VStack(spacing: 16) {
+                                Image(systemName: mood.icon)
+                                    .font(.system(size: 52))
+                                    .symbolRenderingMode(.hierarchical)
+                                Text(mood.rawValue)
+                                    .font(.title3.weight(.medium))
+                                Text(mood.blurb)
+                                    .font(.callout)
+                                    .foregroundStyle(Theme.textSecondary)
                             }
-                            .buttonStyle(.card)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .stroke(selectedDuration == duration ? Color.cyan : Color.clear, lineWidth: 4)
-                            )
+                            .frame(width: 270, height: 220)
+                        }
+                        .buttonStyle(StillButtonStyle(selected: selectedMood == mood))
+                    }
+                }
+
+                // Duration
+                VStack(spacing: 28) {
+                    Text("How much time do you have?")
+                        .font(.title3)
+                        .foregroundStyle(Theme.textSecondary)
+
+                    HStack(spacing: 36) {
+                        ForEach(durations, id: \.self) { d in
+                            Button { selectedDuration = d } label: {
+                                Text("\(d) min")
+                                    .font(.title2.weight(.medium))
+                                    .frame(width: 220, height: 80)
+                            }
+                            .buttonStyle(StillButtonStyle(selected: selectedDuration == d, cornerRadius: 22))
                         }
                     }
                 }
-                
-                // Navigation to Breathing Studio
-                var pattern = getBreathingPattern()
+
+                // Start
+                VStack(spacing: 24) {
                     NavigationLink(destination: BreathingStudioView(
                         duration: TimeInterval(selectedDuration * 60),
                         inhale: pattern.inhale,
@@ -72,29 +111,19 @@ struct MoodSelectionView: View {
                         exhale: pattern.exhale
                     )) {
                         Text("Start Breathing Session")
-                        .font(.title)
-                        .fontWeight(.medium)
-                        .padding(.horizontal, 60)
-                        .padding(.vertical, 25)
+                            .font(.title2.weight(.semibold))
+                            .padding(.horizontal, 70)
+                            .padding(.vertical, 28)
+                    }
+                    .buttonStyle(StillButtonStyle(prominent: true))
+
+                    Text(patternSummary)
+                        .font(.headline)
+                        .foregroundStyle(Theme.textTertiary)
+                        .animation(.easeInOut, value: selectedMood)
                 }
-                .buttonStyle(.plain)
-                .background(Color.cyan)
-                .foregroundColor(.black)
-                .cornerRadius(16)
-                .padding(.top, 40)
             }
+            .padding(.horizontal, 80)
         }
     }
-    private func getBreathingPattern() -> (inhale: TimeInterval, hold: TimeInterval, exhale: TimeInterval) {
-            switch selectedMood {
-            case "Overwhelmed", "Restless":
-                return (4.0, 2.0, 6.0) // Calming
-            case "Focused":
-                return (4.0, 4.0, 4.0) // Box/Balanced
-            case "Tired":
-                return (6.0, 0.0, 2.0) // Energizing
-            default:
-                return (4.0, 2.0, 6.0)
-            }
-        }
 }
