@@ -60,77 +60,87 @@ struct MoodSelectionView: View {
             // Keeping the standard animated background, no image added as requested
             StillBackground()
 
-            VStack(spacing: 80) {
+            VStack(spacing: 64) {
                 
                 // Mood Section
-                VStack(spacing: 36) {
+                VStack(spacing: 40) {
                     Text("How are you feeling?")
                         .font(.system(size: 56, weight: .semibold, design: .serif)) // Smaller, using serif
+                        .tracking(1)
                         .foregroundStyle(Theme.textPrimary)
+                        .shadow(color: Theme.bgBottom.opacity(0.5), radius: 12, y: 4)
 
-                    HStack(spacing: 32) {
+                    HStack(spacing: 40) {
                         ForEach(Mood.allCases) { mood in
                             Button { selectedMood = mood } label: {
-                                VStack(spacing: 12) {
+                                VStack(spacing: 14) {
                                     Image(systemName: mood.icon)
-                                        .font(.system(size: 40)) // Scaled down icon
+                                        .font(.system(size: 44))
                                         .symbolRenderingMode(.hierarchical)
-                                    Text(mood.rawValue)
-                                        .font(.headline)
-                                        .lineLimit(1) // Prevents multi-line wrapping
-                                    Text(mood.blurb)
-                                        .font(.subheadline)
-                                        .foregroundStyle(Theme.textSecondary)
+                                        .frame(height: 52) // Keeps icons on one baseline
+                                    VStack(spacing: 6) {
+                                        Text(mood.rawValue)
+                                            .font(.headline)
+                                            .lineLimit(1) // Prevents multi-line wrapping
+                                        Text(mood.blurb)
+                                            .font(.subheadline)
+                                            .foregroundStyle(Theme.textSecondary)
+                                            .lineLimit(1)
+                                    }
                                 }
-                                // Significantly wider frame (320) to fit "Overwhelmed"
-                                .frame(width: 320, height: 180)
+                                // Wide frame (320) to fit "Overwhelmed"
+                                .frame(width: 320, height: 200)
                             }
-                            .buttonStyle(StillButtonStyle(selected: selectedMood == mood, cornerRadius: 20))
+                            .buttonStyle(StillButtonStyle(selected: selectedMood == mood, cornerRadius: 28))
                         }
                     }
+                    // Lets focus move down from any card, not only the one directly above a button
+                    .focusSection()
                 }
 
                 // Duration Section
-                VStack(spacing: 24) {
+                VStack(spacing: 28) {
                     Text("How much time do you have?")
-                        .font(.headline) // Scaled down
+                        .font(.headline)
+                        .tracking(1)
                         .foregroundStyle(Theme.textSecondary)
 
-                    HStack(spacing: 32) {
+                    HStack(spacing: 40) {
                         ForEach(durations, id: \.self) { d in
                             Button { selectedDuration = d } label: {
                                 Text("\(d) min")
-                                    .font(.body.weight(.medium))
-                                    .frame(width: 240, height: 76) // Tighter vertical padding
+                                    .font(.title3.weight(.medium))
+                                    .frame(width: 240, height: 80)
                             }
-                            .buttonStyle(StillButtonStyle(selected: selectedDuration == d, cornerRadius: 18))
+                            .buttonStyle(StillButtonStyle(selected: selectedDuration == d, cornerRadius: 24))
                         }
                     }
+                    .focusSection()
                 }
 
                 // Start Section
-                VStack(spacing: 20) {
+                VStack(spacing: 24) {
                     NavigationLink(destination: BreathingStudioView(
                         duration: TimeInterval(selectedDuration * 60),
                         inhale: pattern.inhale,
                         hold: pattern.hold,
                         exhale: pattern.exhale
                     )) {
-                        HStack(spacing: 12) {
+                        HStack(spacing: 14) {
                             Image(systemName: "play.fill")
                                 .font(.body)
                             Text("Start Breathing Session")
-                                .font(.headline.weight(.semibold)) // Scaled down font
+                                .font(.headline.weight(.semibold))
                         }
-                        // Much tighter padding to reduce the button's bulk
-                        .padding(.horizontal, 40)
-                        .padding(.vertical, 18)
+                        .padding(.horizontal, 48)
+                        .padding(.vertical, 20)
                     }
-                    .buttonStyle(StillButtonStyle(prominent: true, cornerRadius: 16))
+                    .buttonStyle(StillButtonStyle(prominent: true, cornerRadius: 20))
 
                     Text(patternSummary)
                         .font(.subheadline)
-                        .foregroundStyle(Theme.textTertiary)
+                        .tracking(0.5)
+                        .foregroundStyle(Theme.textSecondary)
                         .animation(.easeInOut, value: selectedMood)
                 }
             }

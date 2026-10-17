@@ -20,28 +20,27 @@ struct AmbientCategory: Identifiable, Hashable {
 
 struct AmbientEscapeView: View {
     // Mock Data: Categories containing their specific video scenes
-    // Mock Data: Categories containing their specific video scenes
-        let categories = [
-            AmbientCategory(name: "Ocean", icon: "water.waves", scenes: [
-                AmbientScene(name: "Gentle Waves", videoName: "ocean_1"),
-                AmbientScene(name: "Deep Blue", videoName: "ocean_2"),
-                AmbientScene(name: "Shoreline", videoName: "ocean_3"),
-                AmbientScene(name: "Twilight Sea", videoName: "ocean_4")
-            ]),
-            AmbientCategory(name: "Forest", icon: "leaf.fill", scenes: [
-                AmbientScene(name: "Morning Mist", videoName: "forest_1"),
-                AmbientScene(name: "Canopy", videoName: "forest_2"),
-                AmbientScene(name: "Creek", videoName: "forest_3")
-            ]),
-            AmbientCategory(name: "Rain", icon: "cloud.rain.fill", scenes: [
-                AmbientScene(name: "Light Drizzle", videoName: "rain_1"),
-                AmbientScene(name: "Thunderstorm", videoName: "rain_2")
-            ]),
-            AmbientCategory(name: "Night Sky", icon: "moon.stars.fill", scenes: [
-                AmbientScene(name: "Aurora", videoName: "night_1"),
-                AmbientScene(name: "Starfield", videoName: "night_2")
-            ])
-        ]
+    let categories = [
+        AmbientCategory(name: "Ocean", icon: "water.waves", scenes: [
+            AmbientScene(name: "Gentle Waves", videoName: "ocean_1"),
+            AmbientScene(name: "Deep Blue", videoName: "ocean_2"),
+            AmbientScene(name: "Shoreline", videoName: "ocean_3"),
+            AmbientScene(name: "Twilight Sea", videoName: "ocean_4")
+        ]),
+        AmbientCategory(name: "Forest", icon: "leaf.fill", scenes: [
+            AmbientScene(name: "Morning Mist", videoName: "forest_1"),
+            AmbientScene(name: "Canopy", videoName: "forest_2"),
+            AmbientScene(name: "Creek", videoName: "forest_3")
+        ]),
+        AmbientCategory(name: "Rain", icon: "cloud.rain.fill", scenes: [
+            AmbientScene(name: "Light Drizzle", videoName: "rain_1"),
+            AmbientScene(name: "Thunderstorm", videoName: "rain_2")
+        ]),
+        AmbientCategory(name: "Night Sky", icon: "moon.stars.fill", scenes: [
+            AmbientScene(name: "Aurora", videoName: "night_1"),
+            AmbientScene(name: "Starfield", videoName: "night_2")
+        ])
+    ]
 
     @State private var activeCategory: AmbientCategory
     @State private var activeScene: AmbientScene
@@ -68,77 +67,89 @@ struct AmbientEscapeView: View {
                 .animation(.easeInOut(duration: 1.0), value: activeScene)
                 .ignoresSafeArea()
             
-            // 2. Very subtle bottom gradient solely to ensure button text is readable
-            LinearGradient(colors: [.clear, .black.opacity(0.6)], startPoint: .center, endPoint: .bottom)
+            // 2. Subtle bottom gradient solely to ensure button text is readable
+            LinearGradient(colors: [.clear, .black.opacity(0.65)], startPoint: .center, endPoint: .bottom)
                 .ignoresSafeArea()
                 .opacity(showControls ? 1 : 0)
+                .animation(.easeInOut(duration: 0.8), value: showControls)
 
             // Wake catcher: Invisible layer that catches clicks without drawing a tvOS button platter
-                        if !showControls {
-                            Color.clear
-                                .contentShape(Rectangle())
-                                .onTapGesture {
-                                    wake()
-                                }
-                        }
+            if !showControls {
+                Color.clear
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        wake()
+                    }
+            }
 
             // 3. The UI Controls
             VStack(spacing: 0) {
                 Spacer()
 
-                VStack(alignment: .leading, spacing: 30) {
+                VStack(alignment: .leading, spacing: 24) {
                     
                     // Top Row: Main Categories
                     Text("Atmosphere")
                         .font(.headline)
+                        .tracking(1)
                         .foregroundStyle(Theme.textSecondary)
                         .padding(.leading, 60)
                     
                     ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 24) {
+                        HStack(spacing: 28) {
                             ForEach(categories) { category in
                                 Button(action: { wake() }) {
-                                    HStack(spacing: 12) {
+                                    HStack(spacing: 14) {
                                         Image(systemName: category.icon)
                                         Text(category.name)
                                             .font(.headline)
                                     }
-                                    .padding(.horizontal, 24)
-                                    .padding(.vertical, 16)
+                                    .padding(.horizontal, 32)
+                                    .padding(.vertical, 18)
                                 }
-                                .buttonStyle(StillButtonStyle(selected: activeCategory.id == category.id, cornerRadius: 16))
+                                .buttonStyle(StillButtonStyle(selected: activeCategory.id == category.id, cornerRadius: 22))
                                 .focused($focusedCategoryID, equals: category.id)
                             }
                         }
                         .padding(.horizontal, 60)
+                        // Room so the focus scale and glow aren't clipped by the scroll view
+                        .padding(.vertical, 20)
                     }
+                    // Lets focus return to the categories from any scene below
+                    .focusSection()
                     
                     // Bottom Row: Specific Scenes for the active category
                     Text(activeCategory.name + " Scenes")
                         .font(.headline)
+                        .tracking(1)
                         .foregroundStyle(Theme.textSecondary)
                         .padding(.leading, 60)
-                        .padding(.top, 10)
+                        .padding(.top, 4)
                     
                     ScrollView(.horizontal, showsIndicators: false) {
-                                            HStack(spacing: 24) {
-                                                ForEach(activeCategory.scenes) { scene in
-                                                    Button(action: {
-                                                        // Clicking a scene hides the controls to view it full screen
-                                                        showControls = false
-                                                    }) {
-                                                        Text(scene.name)
-                                                            .font(.system(size: 24, weight: .semibold)) // Smaller font size ensures everything fits
-                                                            .frame(width: 270, height: 68) // Wider but slimmer to look squarish instead of bulky
-                                                    }
-                                                    // Changing cornerRadius to 8 turns the pills into elegant "rounded squares"
-                                                    .buttonStyle(StillButtonStyle(selected: activeScene.id == scene.id, cornerRadius: 8))
-                                                    .focused($focusedSceneID, equals: scene.id)
-                                                }
-                                            }
-                                            .padding(.horizontal, 60)
-                                            .padding(.bottom, 60)
-                                        }
+                        HStack(spacing: 28) {
+                            ForEach(activeCategory.scenes) { scene in
+                                Button(action: {
+                                    // Clicking a scene hides the controls to view it full screen
+                                    showControls = false
+                                }) {
+                                    Text(scene.name)
+                                        .font(.system(size: 24, weight: .semibold))
+                                        .lineLimit(1)
+                                        .frame(width: 270, height: 72)
+                                }
+                                .buttonStyle(StillButtonStyle(selected: activeScene.id == scene.id, cornerRadius: 14))
+                                .focused($focusedSceneID, equals: scene.id)
+                            }
+                        }
+                        .padding(.horizontal, 60)
+                        // Room so the focus scale and glow aren't clipped by the scroll view
+                        .padding(.vertical, 20)
+                    }
+                    // THE FIX: makes the whole row a focus target, so pressing down from
+                    // "Night Sky" (which has no scene directly beneath it) still lands here
+                    .focusSection()
+                    .padding(.bottom, 36)
                 }
             }
             .opacity(showControls ? 1 : 0)

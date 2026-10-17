@@ -61,17 +61,24 @@ struct BreathingStudioView: View {
                 Spacer()
 
                 // Phase instruction
-                VStack(spacing: 20) {
+                VStack(spacing: 18) {
                     Text(isFinished ? "Complete" : viewModel.currentPhase.rawValue)
                         .font(.system(size: 86, weight: .light, design: .serif)) // Serif matches the new cinematic aesthetic
+                        .tracking(2)
                         .foregroundStyle(Theme.sand)
+                        .shadow(color: Theme.bgBottom.opacity(0.5), radius: 12, y: 4)
                         .id(viewModel.currentPhase)
                         .transition(.opacity)
 
                     Text(hint)
                         .font(.title2)
+                        .multilineTextAlignment(.center)
+                        .lineLimit(2)
                         .foregroundStyle(Theme.accentLight) // Soft blue for the hint
                 }
+                // Fixed height so the orb and controls never shift when the text changes
+                .frame(maxWidth: 1000)
+                .frame(height: 170)
                 .animation(.easeInOut(duration: 0.6), value: viewModel.currentPhase)
 
                 Spacer(minLength: 20)
@@ -80,14 +87,14 @@ struct BreathingStudioView: View {
                 ZStack {
                     // Background track for progress
                     Circle()
-                        .stroke(Color.white.opacity(0.06), lineWidth: 6)
+                        .stroke(Color.white.opacity(0.08), lineWidth: 5)
                         .frame(width: 520, height: 520)
                     
                     // Session progress ring (Using the warm blush tone for contrast)
                     Circle()
                         .trim(from: 0, to: progress)
                         .stroke(Theme.blush.opacity(0.9),
-                                style: StrokeStyle(lineWidth: 6, lineCap: .round))
+                                style: StrokeStyle(lineWidth: 5, lineCap: .round))
                         .frame(width: 520, height: 520)
                         .rotationEffect(.degrees(-90))
                         .animation(.linear(duration: 1), value: progress)
@@ -131,42 +138,49 @@ struct BreathingStudioView: View {
                 Spacer(minLength: 20)
 
                 // Timer + controls
-                VStack(spacing: 36) {
+                VStack(spacing: 28) {
                     Text(timeString(from: viewModel.timeRemaining))
                         .font(.system(size: 44, weight: .light, design: .monospaced))
+                        .tracking(3)
                         .foregroundStyle(Theme.textSecondary)
 
-                    if isFinished {
-                        Button { dismiss() } label: {
-                            Text("Done")
-                                .font(.title2.weight(.semibold))
-                                .padding(.horizontal, 80)
-                                .padding(.vertical, 24)
-                        }
-                        .buttonStyle(StillButtonStyle(prominent: true)) // Uses the new prominent Blush CTA style
-                    } else {
-                        HStack(spacing: 40) {
-                            Button { viewModel.toggleSession() } label: {
-                                Image(systemName: viewModel.isActive ? "pause.fill" : "play.fill")
-                                    .font(.system(size: 36))
-                                    .frame(width: 100, height: 100)
+                    // Fixed height so swapping between the Done button and the round
+                    // controls doesn't move the layout above it
+                    Group {
+                        if isFinished {
+                            Button { dismiss() } label: {
+                                Text("Done")
+                                    .font(.title2.weight(.semibold))
+                                    .padding(.horizontal, 72)
+                                    .padding(.vertical, 22)
                             }
-                            .buttonStyle(StillButtonStyle(cornerRadius: 50))
+                            .buttonStyle(StillButtonStyle(prominent: true, cornerRadius: 32)) // Uses the new prominent Blush CTA style
+                        } else {
+                            HStack(spacing: 48) {
+                                Button { viewModel.toggleSession() } label: {
+                                    Image(systemName: viewModel.isActive ? "pause.fill" : "play.fill")
+                                        .font(.system(size: 36))
+                                        .frame(width: 100, height: 100)
+                                }
+                                .buttonStyle(StillButtonStyle(cornerRadius: 50))
 
-                            Button {
-                                viewModel.endSession()
-                                dismiss()
-                            } label: {
-                                Image(systemName: "xmark")
-                                    .font(.system(size: 36))
-                                    .foregroundStyle(Theme.blush) // Use blush instead of pure red for a softer look
-                                    .frame(width: 100, height: 100)
+                                Button {
+                                    viewModel.endSession()
+                                    dismiss()
+                                } label: {
+                                    Image(systemName: "xmark")
+                                        .font(.system(size: 36))
+                                        .foregroundStyle(Theme.blush) // Use blush instead of pure red for a softer look
+                                        .frame(width: 100, height: 100)
+                                }
+                                .buttonStyle(StillButtonStyle(cornerRadius: 50))
                             }
-                            .buttonStyle(StillButtonStyle(cornerRadius: 50))
                         }
                     }
+                    .frame(height: 100)
                 }
-                .padding(.bottom, 60)
+                // Lowered from 60: tvOS already adds its own bottom safe area
+                .padding(.bottom, 40)
             }
         }
         .onAppear {

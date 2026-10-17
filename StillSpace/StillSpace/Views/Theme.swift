@@ -37,6 +37,8 @@ struct StillBackground: View {
                 .blur(radius: 150)
                 .offset(x: drift ? 550 : 420, y: drift ? 300 : 250)
         }
+        .drawingGroup() // Renders the blurred layers once via Metal instead of every frame
+        .allowsHitTesting(false)
         .ignoresSafeArea()
         .onAppear {
             withAnimation(.easeInOut(duration: 16).repeatForever(autoreverses: true)) {
@@ -68,32 +70,45 @@ private struct StillButtonBody: View {
 
     @Environment(\.isFocused) private var isFocused
 
+    private var shape: RoundedRectangle {
+        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+    }
+
     private var fill: AnyShapeStyle {
         if prominent {
             // Dusty rose/peach highlight for important CTA
-            return AnyShapeStyle(LinearGradient(colors: [Theme.blush, Theme.blush.opacity(0.85)],
+            return AnyShapeStyle(LinearGradient(colors: [Theme.blush, Theme.blush.opacity(isFocused ? 0.92 : 0.85)],
                                                 startPoint: .topLeading, endPoint: .bottomTrailing))
         }
         if selected {
             return AnyShapeStyle(Theme.accent.opacity(isFocused ? 0.35 : 0.22))
         }
         // Transparent glass state at rest
-        return AnyShapeStyle(Color.white.opacity(isFocused ? 0.18 : 0.05))
+        return AnyShapeStyle(Color.white.opacity(isFocused ? 0.18 : 0.06))
+    }
+
+    private var shadowColor: Color {
+        if prominent { return Theme.blush }
+        if selected { return Theme.accent }
+        return Color.black
     }
 
     var body: some View {
         configuration.label
             .foregroundStyle(prominent ? Color(hex: "2D1419") : Theme.textPrimary) // Darker text for rose CTA
-            .background(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous).fill(fill))
+            .background(shape.fill(fill))
             .overlay(
-                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .strokeBorder(selected ? Theme.accentLight : Color.white.opacity(isFocused ? 0.45 : 0.0),
-                                  lineWidth: selected ? 3.5 : 1.5)
+                shape.strokeBorder(
+                    selected ? Theme.accentLight : Color.white.opacity(isFocused ? 0.35 : 0.0),
+                    lineWidth: selected ? 3 : 1.5
+                )
             )
-            .scaleEffect(isFocused ? 1.05 : (configuration.isPressed ? 0.97 : 1.0))
-            .shadow(color: (prominent ? Theme.blush : Color.black).opacity(isFocused ? 0.35 : 0),
-                    radius: 28, y: 12)
-            .animation(.spring(response: 0.3, dampingFraction: 0.8), value: isFocused)
+            .contentShape(shape)
+            .scaleEffect(isFocused ? 1.04 : (configuration.isPressed ? 0.98 : 1.0))
+            .shadow(color: shadowColor.opacity(isFocused ? 0.32 : 0),
+                    radius: 24, y: 10)
+            .animation(.spring(response: 0.35, dampingFraction: 0.85), value: isFocused)
+            .animation(.easeOut(duration: 0.15), value: configuration.isPressed)
     }
 }
 
@@ -103,12 +118,12 @@ extension View {
         self
             .background(
                 RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .fill(Color.white.opacity(0.04))
-                    .shadow(color: Color.black.opacity(0.15), radius: 15, x: 0, y: 10)
+                    .fill(Color.white.opacity(0.05))
+                    .shadow(color: Color.black.opacity(0.18), radius: 18, x: 0, y: 10)
             )
             .overlay(
                 RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .strokeBorder(Color.white.opacity(0.06), lineWidth: 1)
+                    .strokeBorder(Color.white.opacity(0.08), lineWidth: 1)
             )
     }
 }
