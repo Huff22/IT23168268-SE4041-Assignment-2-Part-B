@@ -24,19 +24,19 @@ StillSpace is a sophisticated tvOS application that transforms the television in
 
 ## Interface Showcase
 
-> **[📸 INSERT: Home Screen]**
+> <img width="2000" height="1125" alt="Home Screen" src="https://github.com/user-attachments/assets/bfc14e00-1b17-42e4-913b-c88f75009dcf" />
 > *The cinematic Home interface, featuring a prominent hero section and a bottom carousel of experiences.*
 
-> **[📸 INSERT: Mood Selection Screen]**
+> <img width="2000" height="1125" alt="Mood Selection Screen" src="https://github.com/user-attachments/assets/94d6919a-a8d5-4c93-ab23-cc404bedb985" />
 > *The personalization interface where users define their current mood to calculate the optimal breathing pattern.*
 
-> **[📸 INSERT: Breathing Studio - Inhale Phase]** | **[📸 INSERT: Breathing Studio - Hold Phase]**
+><img width="2000" height="1125" alt="Breathing Studio" src="https://github.com/user-attachments/assets/1d12a52c-70a8-4cf3-803f-c55e49a0e2bd" />
 > *The signature breathing engine featuring a dynamic, scaling orb and a warm progress ring.*
 
-> **[📸 INSERT: Ambient Escape]**
+> <img width="2000" height="1125" alt="Ambient Escape" src="https://github.com/user-attachments/assets/63ede23e-128c-43c9-916f-9504dbe39a77" />
 > *The two-tier spatial navigation system overlaying a seamless, distraction-free video background.*
 
-> **[📸 INSERT: My Journey]**
+> <img width="2000" height="1125" alt="My Journey" src="https://github.com/user-attachments/assets/d181f34a-81b4-4ee8-9648-17c03a4a9905" />
 > *A unified history list and statistical summary of completed sessions, powered by local persistence.*
 
 ---
@@ -94,5 +94,6 @@ Building for tvOS highlighted the stark difference between touch-first and focus
 
 ---
 ### Acknowledgements & Citations
-*   *Background Videos & Audio:* Sourced from [Insert Your Source Here - e.g., Pexels / Envato Elements].
+*   *Background Videos:* Sourced from YouTube.
+*   *Images:* Sourced from Pexels.
 *   *Icons:* Apple SF Symbols.
